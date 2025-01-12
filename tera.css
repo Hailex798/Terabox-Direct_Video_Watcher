@@ -47,8 +47,8 @@ h1 {
   color: #f0f0f0;
 }
 
-.input-group button {
-  padding: 10px 20px;
+.input-group button{
+  padding: 10px 15px;
   background: #4a5568;
   color: #f0f0f0;
   border: none;
@@ -58,9 +58,19 @@ h1 {
   align-items: center;
   gap: 8px;
 }
+.input-group a{
+  padding: 10px 15px;
+  background: #4a5568;
+  color: #f0f0f0;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
 
 .input-group button:hover {
-  background: #2d3748;
+  background: #000000;
 }
 
 .watch-button {

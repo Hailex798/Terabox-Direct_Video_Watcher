@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Terabox Video 📽️</title>
     <link rel="stylesheet" href="tera.css" />
-    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
   </head>
   <body>
     <div class="container">
@@ -27,6 +27,24 @@
             </svg>
             Paste
           </button>
+          <a id="download" style="display: none" target="_blank" rel="noreferrer">
+            <svg
+              width="20px"
+              height="20px"
+              viewBox="0 0 24 24"
+              fill="black"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M17 17H17.01M17.4 14H18C18.9319 14 19.3978 14 19.7654 14.1522C20.2554 14.3552 20.6448 14.7446 20.8478 15.2346C21 15.6022 21 16.0681 21 17C21 17.9319 21 18.3978 20.8478 18.7654C20.6448 19.2554 20.2554 19.6448 19.7654 19.8478C19.3978 20 18.9319 20 18 20H6C5.06812 20 4.60218 20 4.23463 19.8478C3.74458 19.6448 3.35523 19.2554 3.15224 18.7654C3 18.3978 3 17.9319 3 17C3 16.0681 3 15.6022 3.15224 15.2346C3.35523 14.7446 3.74458 14.3552 4.23463 14.1522C4.60218 14 5.06812 14 6 14H6.6M12 15V4M12 15L9 12M12 15L15 12"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Download
+          </a>
         </div>
         <button class="watch-button" onclick="handleWatch()">
           <svg
@@ -42,22 +60,27 @@
         </button>
       </div>
       <div class="video-container" id="videoContainer" style="display: none">
-        <iframe id="videoPlayer" allowfullscreen="" width="100%" height="300px" controls>
+        <iframe
+          id="videoPlayer"
+          allowfullscreen=""
+          width="100%"
+          height="300px"
+          controls
+        >
           Your browser does not support the video element.
         </iframe>
       </div>
     </div>
     <script>
-      function handlePaste() {
-        navigator.clipboard
-          .readText()
-          .then((text) => {
-            document.getElementById("videoUrl").value = text;
-          })
-          .catch((err) => {
-            console.error("Failed to read clipboard:", err);
-          });
+      async function handlePaste() {
+        try {
+          const text = await navigator.clipboard.readText();
+          document.getElementById("videoUrl").value = text;
+        } catch (err) {
+          console.error("Failed to read clipboard:", err);
+        }
       }
+
       function convertLink(originalLink) {
         const baseEmbedUrl = "https://www.1024terabox.com/sharing/embed?surl=";
         const match = originalLink.match(/s\/1([^/]+)/);
@@ -69,15 +92,76 @@
         }
       }
 
+      async function fetchDownloadLink(videoUrl) {
+        const apiURL =
+          "https://terabox-downloader-direct-download-link-generator.p.rapidapi.com/fetch";
+        const apiOptions = {
+          method: "POST",
+          headers: {
+            "x-rapidapi-key":
+              "1f673521ebmsh476855d4036f7d0p14d19ejsn3e5bde4c4ac1",
+            "x-rapidapi-host":
+              "terabox-downloader-direct-download-link-generator.p.rapidapi.com",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: videoUrl }),
+        };
+
+        try {
+          const response = await fetch(apiURL, apiOptions);
+          const result = await response.json();
+
+          if (result && result.length > 0) {
+            return result[0].dlink || result[0].fastdlink;
+          } else {
+            throw new Error("No valid download link found in response.");
+          }
+        } catch (error) {
+          console.error("Error fetching download link:", error);
+          alert("Failed to fetch the download link.");
+          return null;
+        }
+      }
+
       function handleWatch() {
         const videoUrl = document.getElementById("videoUrl").value;
+
         if (videoUrl) {
-          const videoContainer = document.getElementById("videoContainer");
-          const videoPlayer = document.getElementById("videoPlayer");
-          videoPlayer.src = convertLink(videoUrl);
-          videoContainer.style.display = "block";
+          try {
+            // Display the embedded video
+            const videoContainer = document.getElementById("videoContainer");
+            const videoPlayer = document.getElementById("videoPlayer");
+            videoPlayer.src = convertLink(videoUrl);
+            videoContainer.style.display = "block";
+            //Download Functionality Added
+            handleDownload();
+
+            //Download Button Appeared
+            const download = document.getElementById("download");
+            download.style.display = "inline-block";
+            console.log("Button");
+          } catch (error) {
+            console.error("Error handling video:", error);
+            alert("An error occurred while processing the video.");
+          }
         } else {
           alert("Please enter a video URL.");
+        }
+      }
+
+      async function handleDownload() {
+        const videoUrl = document.getElementById("videoUrl").value;
+        const dynamicLink = await fetchDownloadLink(videoUrl);
+
+        const downBtn = document.getElementById("download");
+        // const vidContainer = document.getElementById("videoContainer");
+
+        if (dynamicLink) {
+          // Create an anchor element
+          downBtn.href = dynamicLink;
+          console.log(dynamicLink);
+        } else {
+          console.error("Failed to get the download link.");
         }
       }
     </script>
